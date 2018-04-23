@@ -28,6 +28,7 @@ class JoomCategory(object):
             res = requests.get(self.root_url % random_key(4), headers=self.headers)
         else:
             res = requests.get(self.sub_url % (cid, random_key(4)), headers=self.headers)
+        print res.json()
         content = res.json()
         children = content["payload"]["children"]
         for child in children:
