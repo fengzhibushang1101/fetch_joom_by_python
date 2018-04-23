@@ -3,7 +3,7 @@ __author__ = 'changdongsheng'
 import datetime
 
 import sqlalchemy as SA
-from lib.sql2.base import Base
+from sql.base import Base
 from sqlalchemy import text
 
 
