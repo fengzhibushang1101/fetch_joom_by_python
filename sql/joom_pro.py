@@ -4,9 +4,9 @@ import datetime
 import traceback
 
 import sqlalchemy as SA
-from lib.sql2.base import Base, db
-from lib.sql2.session import sessionCM
-from lib.utils.logger_utils import logger
+from sql.base import Base, db
+from sql.session import sessionCM
+# from lib.utils.logger_utils import logger
 from sqlalchemy import text
 
 
@@ -101,7 +101,7 @@ class JoomPro(Base):
             cursor.close()
             return True
         except:
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
             return False
 
     @classmethod

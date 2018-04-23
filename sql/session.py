@@ -2,7 +2,7 @@
 __author__ = 'changdongsheng'
 import contextlib
 
-from lib.sql2.base import db
+from sql.base import db
 from sqlalchemy.orm import sessionmaker
 Session = sessionmaker(bind=db)
 

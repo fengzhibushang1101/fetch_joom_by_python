@@ -9,8 +9,8 @@
 import traceback
 
 import sqlalchemy as SA
-from lib.sql2.base import Base
-from lib.utils.logger_utils import logger
+from sql.base import Base
+# from lib.utils.logger_utils import logger
 from sqlalchemy import text
 
 
@@ -33,7 +33,7 @@ class JoomUser(Base):
             session.commit()
             return joom_user
         except:
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
             return None
 
     @classmethod
@@ -47,7 +47,7 @@ class JoomUser(Base):
         try:
             cursor = connect.execute(sql, **kwargs)
         except:
-            logger.error("joom user upsert error: %s" % sql)
+            print("joom user upsert error: %s" % sql)
         finally:
             if cursor:
                 cursor.close()

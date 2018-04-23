@@ -3,8 +3,8 @@ __author__ = 'changdongsheng'
 import traceback
 
 import sqlalchemy as SA
-from lib.sql2.base import Base
-from lib.utils.logger_utils import logger
+from sql.base import Base
+# from lib.utils.logger_utils import logger
 from sqlalchemy import text
 
 class JoomReview(Base):

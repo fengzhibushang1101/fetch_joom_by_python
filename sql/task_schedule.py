@@ -4,9 +4,8 @@ import time
 import traceback
 
 import sqlalchemy as SA
-from lib.sql2.base import Base, db
-from lib.sql2.session import sessionCM
-from lib.utils.logger_utils import logger
+from sql.base import Base, db
+from sql.session import sessionCM
 from sqlalchemy import UniqueConstraint, Index
 from sqlalchemy import text
 from sqlalchemy.sql import and_, or_
@@ -42,7 +41,7 @@ class TaskSchedule(Base):
             session.commit()
             return ts
         except:
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
             return None
 
     @classmethod
@@ -68,7 +67,7 @@ class TaskSchedule(Base):
                     session.commit()
             return True
         except:
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
             return None
 
     @classmethod
@@ -135,7 +134,7 @@ class TaskSchedule(Base):
         with sessionCM() as session:
             task = session.query(cls).filter(and_(cls.key == key, cls.kind == kind, cls.site == site)).first()
             if task:
-                logger.debug("update params: key: %s, value: %s, status: %s" % (key, value, status))
+                # logger.debug("update params: key: %s, value: %s, status: %s" % (key, value, status))
                 task.status = status
                 task.value = value
                 session.add(task)
@@ -189,7 +188,7 @@ class TaskSchedule(Base):
             connect.close()
             return result
         except:
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
             return []
 
     @staticmethod
@@ -226,8 +225,8 @@ class TaskSchedule(Base):
             connect.close()
             return True
         except:
-            logger.error(traceback.format_exc())
-            logger.error("key: %s, value: %s" % (key, value))
+            # logger.error(traceback.format_exc())
+            # logger.error("key: %s, value: %s" % (key, value))
             return False
 
     @staticmethod
