@@ -13,7 +13,7 @@ redis_type = ["LIST", "DICT", "SET"]
 pool = redis.ConnectionPool(host='localhost',
                             port=6379,
                             db=0,
-                            # password="n1UUi4IKc1m2hV277eZtYW9T451p5lV3tSHAFJ647Xai83U44izwm2ciXDrxt05p",
+                            password="n1UUi4IKc1m2hV277eZtYW9T451p5lV3tSHAFJ647Xai83U44izwm2ciXDrxt05p",
                             max_connections=50)
 conn = redis.Redis(connection_pool=pool, socket_timeout=60, charset='utf-8', errors='strict')
 
