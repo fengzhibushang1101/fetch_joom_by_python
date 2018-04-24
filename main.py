@@ -32,7 +32,7 @@ def update_and_init_cate_task():
     return True
 
 
-def batch_cate_item_rev():
+def batch_cate_item_rev(auth):
     EXECUTOR = {
         "cate": batch_product_ids,
     }
@@ -47,7 +47,7 @@ def batch_cate_item_rev():
             fun_executor = EXECUTOR[kind]
             with futures.ThreadPoolExecutor(max_workers=64) as executor:
                 future_to_worker = {
-                    executor.submit(fun_executor, **ts): ts for ts in tasks
+                    executor.submit(fun_executor, auth, **ts): ts for ts in tasks
                 }
                 for future in futures.as_completed(future_to_worker):
                     ts = future_to_worker[future]
@@ -56,6 +56,7 @@ def batch_cate_item_rev():
                     except Exception as exc:
                         print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
             print("kind: %s, complete a batch tasks @@@@@@" % kind)
+
 
 if __name__ == "__main__":
     redis_conn.delete("joom_token")
@@ -68,13 +69,4 @@ if __name__ == "__main__":
     print u"将分类添加到任务队列"
     update_and_init_cate_task()
     print u"正在采集分类下的产品列表"
-    batch_cate_item_rev()
-
-
-
-
-
-
-
-
-
+    batch_cate_item_rev(auth)

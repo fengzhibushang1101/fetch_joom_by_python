@@ -63,8 +63,13 @@ import ujson as json
 from sql.task_schedule import TaskSchedule
 from utils.redis_util import redis_conn
 
-
-def batch_product_ids(self, **kwargs):
+batch_url = "https://api.joom.com/1.1/search/products?language=en-US&currency=USD&_=jfs3%s"
+def batch_product_ids(auth, **kwargs):
+    headers = {
+        "content-type": "application/json",
+        "authorization": auth,
+        "origin": "https://www.joom.com"
+    }
     pgToken = kwargs.get("value", None)
     cate = kwargs.get("key")
     if not pgToken:
@@ -94,11 +99,11 @@ def batch_product_ids(self, **kwargs):
     if pgToken:
         data["pageToken"] = pgToken
     data_str = json.dumps(data)
-    url = self.batch_url % random_key(4)
+    url = batch_url % random_key(4)
     try:
-        res = requests.post(url, data_str, headers=self.headers, timeout=15)
+        res = requests.post(url, data_str, headers=headers, timeout=15)
     except:
-        res = requests.post(url, data_str, headers=self.headers, timeout=15)
+        res = requests.post(url, data_str, headers=headers, timeout=15)
     content = json.loads(res.content)
     if res.status_code == 200 and "payload" in content and times <= 10000 and "nextPageToken" in content["payload"]:
         items = content["payload"]["items"]
