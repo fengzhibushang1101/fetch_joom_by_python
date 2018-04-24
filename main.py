@@ -63,11 +63,11 @@ if __name__ == "__main__":
     will_update_cate = raw_input("是否需要更新类目(y/n)?")
     if will_update_cate.lower() in ["y", "yes"]:
         JoomCategory(auth).category()
-    print "正在重置任务状态"
+    print u"正在重置任务状态"
     TaskSchedule.clear()
-    print "将分类添加到任务队列"
+    print u"将分类添加到任务队列"
     update_and_init_cate_task()
-    print "正在采集分类下的产品列表"
+    print u"正在采集分类下的产品列表"
     batch_cate_item_rev()
 
 
