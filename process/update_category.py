@@ -28,7 +28,6 @@ class JoomCategory(object):
             res = requests.get(self.root_url % random_key(4), headers=self.headers)
         else:
             res = requests.get(self.sub_url % (cid, random_key(4)), headers=self.headers)
-        print res.json()
         content = res.json()
         children = content["payload"]["children"]
         for child in children:
@@ -49,6 +48,7 @@ class JoomCategory(object):
             for child in cate["children"]:
                 self.update_category(0, child, level+1)
         with sessionCM() as session:
+            print u"正在更新/保存%s类目" % cate["name"]
             c_id = Category.save(session, cate["id"], cate["name"], p_id, not cate["has_children"], level, 31)
             for child in cate["children"]:
                 self.update_category(c_id, child, level+1)
