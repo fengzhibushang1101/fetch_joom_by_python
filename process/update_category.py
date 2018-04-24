@@ -11,7 +11,7 @@
 import requests
 import ujson as json
 
-from func import random_key
+from func import random_key, get_joom_token
 from sql.session import sessionCM
 from sql.category import Category
 
@@ -56,6 +56,6 @@ class JoomCategory(object):
 
 
 if __name__ == "__main__":
-    auth = "Bearer SEV0001MTUyMzI1NDc1MXxsU0RBOHIzTEtZOVkzQnB5UkxvbWgtRFJVWkNVRnEwY1cwLUdRWDlMc0EzamxuaU0tNVNRZ2llS1hXdUpXZXNSaENaLUZxY2RMc3hXOGRuX2pvcjMyQlh1ZXFBOWFpVTRfTHVNWUN3azJpYlktTkR2WnFfTnNRdkpUZVIwWlp3RjBtOHVfUnFsaGNhYXRTZXZOVjRqa242WUVld2hHdnRabk1rNzFlRXpzN2dDVmc9PXwci95C1oFgNvhEi5K3XOptPVwLq8u3otTCNYdGz4Dh5A=="
+    auth = get_joom_token()
     jc = JoomCategory(auth)
     print jc.category()

@@ -66,6 +66,7 @@ if __name__ == "__main__":
         JoomCategory(auth).category()
     print u"正在重置任务状态"
     TaskSchedule.clear()
+    redis_conn.delete("cate#items")
     print u"将分类添加到任务队列"
     update_and_init_cate_task()
     print u"正在采集分类下的产品列表"
