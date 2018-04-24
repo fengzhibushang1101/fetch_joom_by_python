@@ -31,6 +31,7 @@ class JoomCategory(object):
         content = res.json()
         children = content["payload"]["children"]
         for child in children:
+            print u"获取到分类%s" % child["name"]
             item = {"id": child["id"], "name": child["name"], "has_children": child["hasPublicChildren"], "children": []}
             if item["has_children"]:
                 self._category(cid=item["id"], parent=item["children"])
