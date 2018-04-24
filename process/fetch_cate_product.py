@@ -110,7 +110,7 @@ def batch_product_ids(auth, **kwargs):
         items = [it["id"] for it in items]
         if items:
             redis_conn.sadd("cate#items", *items)
-        if len(items) < count:
+        if len(items) == 0:
             result = TaskSchedule.raw_update(31, "cate", cate,
                                              value=content["payload"]["nextPageToken"] + "#" + str(times + 1),
                                              status=TaskSchedule.DONE)
