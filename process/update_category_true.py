@@ -32,6 +32,7 @@ class JoomCategory(object):
         n_level = level + 1
         content = res.json()
         c_infos = content["payload"]["children"]
+        task_list = []
         with sessionCM() as session:
             for c_info in c_infos:
                 print c_info
@@ -43,8 +44,12 @@ class JoomCategory(object):
                     n_p_id = Category.save(session, tag, name, p_id, is_leaf, level, 31)
                 else:
                     n_p_id = cate.id
+                session.close()
                 if not is_leaf:
-                    self.category_stalker(p_tag=tag, level=n_level, p_id=n_p_id)
+                    task_list.append(dict(p_tag=tag, level=n_level, p_id=n_p_id))
+        if task_list:
+            for task in task_list:
+                self.category_stalker(**task)
 
     def begin_stalk(self):
         self.category_stalker()
