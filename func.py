@@ -37,6 +37,7 @@ def get_joom_token():
         except requests.ConnectTimeout:
             try_times -= 1
         except Exception, e:
+            print e
             return False
 
 
@@ -44,4 +45,4 @@ def random_key(length=48):
     return ''.join([random.choice(string.letters) for i in xrange(length)])
 
 if __name__ == "__main__":
-    get_joom_token()
+    print get_joom_token()

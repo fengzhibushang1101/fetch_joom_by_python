@@ -48,3 +48,6 @@ class JoomCategory(object):
 
     def begin_stalk(self):
         self.category_stalker()
+
+if __name__ == "__main__":
+    JoomCategory("1").begin_stalk()
