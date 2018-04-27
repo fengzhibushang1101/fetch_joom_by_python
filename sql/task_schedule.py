@@ -52,7 +52,7 @@ class TaskSchedule(Base):
     @classmethod
     def get_init_raw(cls, kind, site=31, limit=10000, offset=0):
         with sessionCM() as session:
-            infos = session.query(cls.key).filter(SA.and_(
+            infos = session.query(cls).filter(SA.and_(
                 cls.site == site,
                 cls.kind == kind,
                 cls.status == cls.INIT,
