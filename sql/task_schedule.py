@@ -49,12 +49,20 @@ class TaskSchedule(Base):
             cls.status == status,
         )).offset(offset).limit(limit)
 
+    @classmethod
+    def clear(cls):
+        connect = db.connect()
+        create_str = cls.get_create_table_str
+        connect.execute('drop table %s; %s;' % (cls.__tablename__, create_str))
+        connect.close()
+
+    @classmethod
+    def get_create_table_str(cls):
+        connect = db.connect()
+        res = connect.execute('show create table %s' % cls.__tablename__)
+        connect.close()
+        return res.first()[1]
 
 
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    print TaskSchedule.get_create_table_str()

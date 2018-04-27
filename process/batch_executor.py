@@ -1,5 +1,7 @@
 #coding=utf8
 from process.update_category_true import JoomCategory
+from sql.category import Category
+from sql.task_schedule import TaskSchedule
 
 __author__ = 'Administrator'
 
@@ -12,26 +14,24 @@ from sqlalchemy import text
 from functools import partial
 from concurrent import futures
 from sqlalchemy.sql import and_
-from sql.base import db
+from sql.base import db, sessionCM
+
 
 #
 # authorization = cc.get("joom#token")
 #
 #
-# def update_and_init_cate_task():
-#     jc = JoomCategory(authorization)
-#     jc.category()
-#     with sessionCM() as session:
-#         cate_lst = session.query(Category.tag).filter(and_(Category.site_id==31, Category.is_leaf==1, Category.status=="0")).all()
-#         cate_lst = [ct[0] for ct in cate_lst]
-#         kwargs = {
-#             "kind": "cate",
-#             "site": 31,
-#             "keys": cate_lst
-#         }
-#         TaskSchedule.batch_upsert(session, **kwargs)
-#     return True
-#
+def init_cate_task():
+    with sessionCM() as session:
+        cate_lst = session.query(Category.tag).filter(and_(Category.site_id == 31, Category.is_leaf == 1)).all()
+        cate_lst = [ct[0] for ct in cate_lst]
+        kwargs = {
+            "kind": "cate",
+            "site": 31,
+            "keys": cate_lst
+        }
+        TaskSchedule.batch_insert(session, **kwargs)
+    return True
 #
 # def batch_cate_item_rev():
 #     jp = JoomProduct(authorization)
@@ -91,5 +91,9 @@ if __name__ == "__main__":
     
     redis_conn.delete("joom_token")
     auth = get_joom_token()
-    JoomCategory(auth).begin_stalk()
+    will_update_category = raw_input("是否更新类目(y/n)?")
+    if will_update_category.lower in ["yes", "y"]:
+        JoomCategory(auth).begin_stalk()
+    TaskSchedule.clear()
+    init_cate_task()
     # self_killed()
