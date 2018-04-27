@@ -32,6 +32,7 @@ def get_joom_token():
             session = requests.session()
             res = session.post(req_url, headers=headers)
             result = res.json()
+            redis_conn.set("joom_token", "Bearer %s" % result["accessToken"])
             return "Bearer %s" % result["accessToken"]
         except requests.ConnectTimeout:
             try_times -= 1

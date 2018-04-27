@@ -80,6 +80,8 @@ class RedisUtil(object):
 
 redis_conn = RedisUtil()
 
+
+
 # if __name__ == "__main__":
 #     redis_conn.set("a", 1)
 #     print redis_conn.get("a")

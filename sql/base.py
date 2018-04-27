@@ -16,7 +16,7 @@ mysql_db = {
     "user": "myweb",
     "password": "MyNewPass4!",
     "host": "127.0.0.1",
-    "db": "andata",
+    "db": "new_andata",
 }
 db = SA.create_engine(
     "mysql://%s:%s@%s/%s?charset=utf8mb4" % (mysql_db["user"], mysql_db["password"], mysql_db["host"], mysql_db["db"]),
