@@ -47,7 +47,7 @@ def batch_cate_item_rev():
     }
     for kind in ["cate"]:
         while True:
-            tasks = TaskSchedule.get_init_raw(31, kind)
+            tasks = TaskSchedule.get_init_raw(kind, 31)
             if not tasks:
                 if kind == "cate":
                     restore_cate_items_task()
@@ -94,7 +94,7 @@ def self_killed():
 
 
 if __name__ == "__main__":
-
+    redis_conn.delete('cate#items')
     redis_conn.delete("joom_token")
     auth = get_joom_token()
     will_update_category = raw_input("是否更新类目(y/n)?")
