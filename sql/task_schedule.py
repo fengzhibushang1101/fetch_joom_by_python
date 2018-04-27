@@ -38,7 +38,7 @@ class TaskSchedule(Base):
     @classmethod
     def batch_insert(cls, session, kind, keys, site=31):
         infos = map(lambda x: {"key": x, "site": site, "kind": kind}, keys)
-        session.excuce(cls.__table__.Insert(), infos)
+        session.excucet(cls.__table__.Insert(), infos)
         session.add()
 
     @classmethod
