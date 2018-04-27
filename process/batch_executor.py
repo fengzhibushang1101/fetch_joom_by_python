@@ -36,7 +36,7 @@ def init_cate_task():
 
 
 #
-def batch_cate_item_rev():
+def batch_cate_item_rev(auth):
     EXECUTOR = {
         "cate": batch_product_ids,
     }
@@ -56,7 +56,7 @@ def batch_cate_item_rev():
             fun_executor = EXECUTOR[kind]
             with futures.ThreadPoolExecutor(max_workers=64) as executor:
                 future_to_worker = {
-                    executor.submit(fun_executor, **ts): ts for ts in tasks
+                    executor.submit(fun_executor, auth, **ts): ts for ts in tasks
                 }
                 for future in futures.as_completed(future_to_worker):
                     ts = future_to_worker[future]
@@ -102,4 +102,4 @@ if __name__ == "__main__":
         JoomCategory(auth).begin_stalk()
     TaskSchedule.clear()
     init_cate_task()
-    batch_cate_item_rev()
+    batch_cate_item_rev(auth)
