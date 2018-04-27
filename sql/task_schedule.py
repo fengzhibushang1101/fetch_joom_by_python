@@ -18,7 +18,7 @@ class TaskSchedule(Base):
     site = SA.Column(SA.Integer(), nullable=False)  # 31
     kind = SA.Column(SA.String(16), nullable=False)  # 分类：目录，产品，评论
     status = SA.Column(SA.Integer(), default=INIT)  # 0-初始态；1-执行态；2-结束态; 4-错误
-    next_token = SA.Column(SA.text())
+    next_token = SA.Column(SA.TEXT)
     dealtime = SA.Column(SA.Integer(), default=0)
     error_times = SA.Column(SA.Integer(), nullable=False, default=0)
 
