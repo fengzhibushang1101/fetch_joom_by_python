@@ -73,8 +73,10 @@ def batch_product_ids(auth, **kwargs):
         if items:
             redis_conn.sadd("cate#items", *items)
         if len(items) == 0:
+            print "change a status to done"
             result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.DONE, times)
         else:
+            print "change a status to init"
             result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.INIT, times+1, 0, content["payload"]["nextPageToken"])
             if not result:
                 print("cate update error with tag: %s" % cate)

@@ -47,6 +47,7 @@ def batch_cate_item_rev(auth):
     }
     for kind in ["cate"]:
         while True:
+            print("kind: %s, begin a batch tasks @@@@@@" % kind)
             tasks = TaskSchedule.get_init_raw(kind, 31)
             if not tasks:
                 if kind == "cate":
