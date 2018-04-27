@@ -4,7 +4,7 @@ import time
 import traceback
 
 import sqlalchemy as SA
-from sql.base import Base, db
+from sql.base import Base, db, sessionCM
 from sqlalchemy import UniqueConstraint, Index, text
 
 
@@ -48,6 +48,27 @@ class TaskSchedule(Base):
             cls.kind == kind,
             cls.status == status,
         )).offset(offset).limit(limit)
+
+    @classmethod
+    def get_init_raw(cls, kind, site=31, limit=10000, offset=0):
+        with sessionCM() as session:
+            infos = session.query(cls.key).filter(SA.and_(
+                cls.site == site,
+                cls.kind == kind,
+                cls.status == cls.INIT,
+            )).offset(offset).limit(limit)
+            r_infos = list()
+            for info in infos:
+                info.status = cls.DOING
+                session.add(info)
+                r_infos.append({
+                    "next_token": info.next_token,
+                    "key": info.key,
+                    "dealtime": info.dealtime,
+                    "error_times": info.error_times
+                })
+            session.commit()
+            return r_infos
 
     @classmethod
     def clear(cls):

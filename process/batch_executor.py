@@ -47,9 +47,9 @@ def batch_cate_item_rev():
     }
     for kind in ["cate"]:
         while True:
-            tasks = TaskSchedule.get_raw_kind_batch(31, kind)
+            tasks = TaskSchedule.get_init_raw(31, kind)
             if not tasks:
-                if kind == "cate" and not TaskSchedule.is_raw_starting("item"):
+                if kind == "cate":
                     restore_cate_items_task()
                 print("%s tasks all completed !!!" % kind)
                 break

@@ -24,7 +24,7 @@ def batch_product_ids(auth, **kwargs):
         "authorization": auth,
         "origin": "https://www.joom.com"
     }
-    pg_token = kwargs.get("token", None)
+    pg_token = kwargs.get("next_token", None)
     cate = kwargs["key"]
     times = kwargs.get("dealtime", 0)
     error_times = kwargs.get("error_times", 0)
