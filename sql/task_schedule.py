@@ -5,7 +5,7 @@ import traceback
 
 import sqlalchemy as SA
 from sql.base import Base, db
-from sqlalchemy import UniqueConstraint, Index
+from sqlalchemy import UniqueConstraint, Index, text
 
 
 class TaskSchedule(Base):
@@ -38,8 +38,8 @@ class TaskSchedule(Base):
     @classmethod
     def batch_insert(cls, session, kind, keys, site=31):
         infos = map(lambda x: {"key": x, "site": site, "kind": kind}, keys)
-        session.excucet(cls.__table__.Insert(), infos)
-        session.add()
+        session.execute(cls.__table__.insert(), infos)
+        session.commit()
 
     @classmethod
     def find_by_kind_status_limit(cls, session, kind, status="0", site=31, limit=10000, offset=0):
@@ -52,8 +52,9 @@ class TaskSchedule(Base):
     @classmethod
     def clear(cls):
         connect = db.connect()
-        create_str = cls.get_create_table_str
-        connect.execute('drop table %s; %s;' % (cls.__tablename__, create_str))
+        create_str = cls.get_create_table_str()
+        connect.execute('drop table %s;' % cls.__tablename__)
+        connect.execute(create_str)
         connect.close()
 
     @classmethod
@@ -63,6 +64,42 @@ class TaskSchedule(Base):
         connect.close()
         return res.first()[1]
 
+    @staticmethod
+    def raw_set(site, kind, key, status, dealtime, error_times=0, next_token=None):
+        sql = text(
+            'update task_schedule set status=:status where task_schedule.key=:ts_key and kind=:kind and site=:site and error_time=:error_times and dealtime=:dealtime and next_token=:next_token;')
+        connect = db.connect()
+        cursor = connect.execute(sql, status=status, ts_key=key, kind=kind, site=site, dealtime=dealtime,
+                                 error_times=error_times, next_token=next_token)
+        cursor.close()
+        connect.close()
+        return True
+
+    @classmethod
+    def raw_pure_upsert(cls, key_lst, kind, site):
+        connect = db.connect()
+        if isinstance(key_lst[0], list):
+            for k_lst in key_lst:
+                values = zip(k_lst, [kind] * len(k_lst), [site] * len(k_lst), [TaskSchedule.INIT] * len(k_lst),
+                             [0] * len(k_lst))
+                cls._raw_batch_upsert(connect, values)
+        else:
+            values = zip(key_lst, [kind] * len(key_lst), [site] * len(key_lst), [TaskSchedule.INIT] * len(key_lst),
+                         [0] * len(key_lst))
+            cls._raw_batch_upsert(connect, values)
+        connect.close()
+        return True
+
+    @classmethod
+    def _raw_batch_upsert(cls, connect, values):
+        values_map = ['("%s", "%s", %s, %s, %s)' % item for item in values]
+        sql = 'insert into task_schedule (task_schedule.key, kind, site, status, dealtime) values %s;' % ",".join(
+            values_map)
+        sql = text(sql)
+        cursor = connect.execute(sql)
+        cursor.close()
+        return True
+
 
 if __name__ == "__main__":
-    print TaskSchedule.get_create_table_str()
+    print TaskSchedule.__table__.insert

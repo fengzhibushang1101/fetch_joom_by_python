@@ -1,4 +1,5 @@
-#coding=utf8
+# coding=utf8
+from process.fetch_cate_product import batch_product_ids, restore_cate_items_task
 from process.update_category_true import JoomCategory
 from sql.category import Category
 from sql.task_schedule import TaskSchedule
@@ -32,35 +33,40 @@ def init_cate_task():
         }
         TaskSchedule.batch_insert(session, **kwargs)
     return True
+
+
 #
-# def batch_cate_item_rev():
-#     jp = JoomProduct(authorization)
-#     jr = JoomRev(authorization)
-#     EXECUTOR = {
-#         "cate": jp.batch_product_ids,
-#         "item": jp.product_info,
-#         "rev": jr.crawl_review
-#     }
-#     for kind in ["cate", "item", "rev"]:
-#         while True:
-#             tasks = TaskSchedule.get_raw_kind_batch(31, kind)
-#             if not tasks and TaskSchedule.is_raw_complete(kind):
-#                 if kind == "cate" and not TaskSchedule.is_raw_starting("item"):
-#                     jp.restore_cate_items_task()
-#                 print("%s tasks all completed !!!" % kind)
-#                 break
-#             fun_executor = EXECUTOR[kind]
-#             with futures.ThreadPoolExecutor(max_workers=64) as executor:
-#                 future_to_worker = {
-#                     executor.submit(fun_executor, **ts): ts for ts in tasks
-#                 }
-#                 for future in futures.as_completed(future_to_worker):
-#                     ts = future_to_worker[future]
-#                     try:
-#                         data = future.result()
-#                     except Exception as exc:
-#                         logger.error("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
-#             print("kind: %s, complete a batch tasks @@@@@@" % kind)
+def batch_cate_item_rev():
+    EXECUTOR = {
+        "cate": batch_product_ids,
+    }
+    process_length = {
+        "cate": 1,
+        "item": 4,
+        "rev": 4
+    }
+    for kind in ["cate"]:
+        while True:
+            tasks = TaskSchedule.get_raw_kind_batch(31, kind)
+            if not tasks:
+                if kind == "cate" and not TaskSchedule.is_raw_starting("item"):
+                    restore_cate_items_task()
+                print("%s tasks all completed !!!" % kind)
+                break
+            fun_executor = EXECUTOR[kind]
+            with futures.ThreadPoolExecutor(max_workers=64) as executor:
+                future_to_worker = {
+                    executor.submit(fun_executor, **ts): ts for ts in tasks
+                }
+                for future in futures.as_completed(future_to_worker):
+                    ts = future_to_worker[future]
+                    try:
+                        data = future.result()
+                    except Exception as exc:
+                        print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
+            print("kind: %s, complete a batch tasks @@@@@@" % kind)
+
+
 #
 #
 # def update_review_cnt():
@@ -88,7 +94,7 @@ def self_killed():
 
 
 if __name__ == "__main__":
-    
+
     redis_conn.delete("joom_token")
     auth = get_joom_token()
     will_update_category = raw_input("是否更新类目(y/n)?")
@@ -96,4 +102,4 @@ if __name__ == "__main__":
         JoomCategory(auth).begin_stalk()
     TaskSchedule.clear()
     init_cate_task()
-    # self_killed()
+    batch_cate_item_rev()
