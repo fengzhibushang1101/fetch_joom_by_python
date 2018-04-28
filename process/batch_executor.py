@@ -101,6 +101,8 @@ if __name__ == "__main__":
     will_update_category = raw_input("是否更新类目(y/n)?")
     if will_update_category.lower in ["yes", "y"]:
         JoomCategory(auth).begin_stalk()
-    TaskSchedule.clear()
-    init_cate_task()
+    will_clear_schedule = raw_input("是否清空(y/n)?")
+    if will_clear_schedule.lower in ["yes", "y"]:
+        TaskSchedule.clear()
+        init_cate_task()
     batch_cate_item_rev(auth)
