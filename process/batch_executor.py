@@ -95,14 +95,16 @@ def self_killed():
 
 
 if __name__ == "__main__":
-    redis_conn.delete('cate#items')
     redis_conn.delete("joom_token")
     auth = get_joom_token()
     will_update_category = raw_input("是否更新类目(y/n)?")
-    if will_update_category.lower in ["yes", "y"]:
+    if will_update_category.lower() in ["yes", "y"]:
         JoomCategory(auth).begin_stalk()
-    will_clear_schedule = raw_input("是否清空(y/n)?")
-    if will_clear_schedule.lower in ["yes", "y"]:
+    will_clear_schedule = raw_input("是否清空任务队列(y/n)?")
+    if will_clear_schedule.lower() in ["yes", "y"]:
         TaskSchedule.clear()
         init_cate_task()
+    will_clear_before_pros = raw_input("是否清空原来的产品ID(y/n)?")
+    if will_clear_before_pros.lower() in ["yes", "y"]:
+        redis_conn.delete('cate#items')
     batch_cate_item_rev(auth)
