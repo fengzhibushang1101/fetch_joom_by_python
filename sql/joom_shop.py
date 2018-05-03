@@ -61,7 +61,7 @@ class JoomShop(Base):
                     dict(shop_name=name, shop_no=shop_no, logo=logo, rate=rate, save_count=save_count,
                          create_time=create_time, update_time=update_time, is_verify=is_verify))
             sql = text(
-                'insert into joom_shop (joom_shop.name,shop_no,logo,rate,save_count,create_time,update_time,is_verify,pro_count,reviews_count,r_count_30,r_count_7,r_count_7_14,growth_rate,cate_id) values (:shop_name,:shop_no,:logo,:rate,:save_count,:create_time,:update_time,:is_verify,0,0,0,0,0,0,"") on duplicate key update rate=:rate, save_count=:save_count, create_time=:create_time, update_time=:update_time, is_verify=:is_verify;')
+                'insert into joom_shop (joom_shop.name,shop_no,logo,rate,save_count,create_time,update_time,is_verify,pro_count,reviews_count,r_count_30,r_count_7,r_count_7_14,growth_rate,cate_id) values (:shop_name,:shop_no,:logo,:rate,:save_count,:create_time,:update_time,:is_verify,0,0,0,0,0,0,"") on duplicate key update rate=values(rate), save_count=values(save_count), create_time=values(create_time), update_time=values(update_time), is_verify=values(is_verify);')
             cursor = connect.execute(sql, *new_infos)
             cursor.close()
 
@@ -85,3 +85,5 @@ class JoomShop(Base):
                                  create_time=create_time, update_time=update_time, is_verify=is_verify)
         cursor.close()
         return True
+
+

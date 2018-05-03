@@ -97,15 +97,14 @@ class JoomPro(Base):
                 reviews_count = info.get("reviews_count", 0)
                 create_time = info["create_time"]
                 update_time = info["update_time"]
-                new_infos.append((name, pro_no, shop_no, category_id, image, rate, msrp, discount, real_price,
-                                  reviews_count, create_time, update_time, name, category_id, rate, msrp, discount, real_price, reviews_count, update_time))
-                # dict(jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate,
-                #      msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count,
-                #      create_time=create_time, update_time=update_time))
-            # sql = text(
-            #     'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
-            sql = 'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (?, ?, ?,?,?,?,?,?,?,?,?,?,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=?,category_id=?,rate=?,msrp=?,discount=?,real_price=?,reviews_count=?,update_time=?;'
-
+                # new_infos.append((name, pro_no, shop_no, category_id, image, rate, msrp, discount, real_price,
+                #                   reviews_count, create_time, update_time, name, category_id, rate, msrp, discount, real_price, reviews_count, update_time))
+                new_infos.append(dict(jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate,
+                     msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count,
+                     create_time=create_time, update_time=update_time))
+            sql =text('insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=VALUES(joom_pro.name),category_id=VALUES(category_id),rate=VALUES(rate),msrp=VALUES(msrp),discount=VALUES(discount),real_price=VALUES(real_price),reviews_count=VALUES(reviews_count),update_time=VALUES(update_time);')
+            # sql = text('insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (?, ?, ?,?,?,?,?,?,?,?,?,?,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=?,category_id=?,rate=?,msrp=?,discount=?,real_price=?,reviews_count=?,update_time=?;')
+            # print type(new_infos[0])
             cursor = connect.execute(sql, *new_infos)
             cursor.close()
         except Exception, e:
@@ -159,6 +158,15 @@ if __name__ == "__main__":
         "shop_no": "222222222",
         "create_time": datetime.datetime.now(),
         "update_time": datetime.datetime.now(),
-    }])
-    print 111111
-    connect.close()
+    }, {
+        "pro_no": "3333333333123",
+        "shop_no": "222222123222",
+        "create_time": datetime.datetime.now(),
+        "update_time": datetime.datetime.now(),
+    }
+    ])
+    connect.execute(
+        text("INSERT INTO test (name, value) VALUES (:name, :value)"),
+        *[{'name': 1, 'value': 2},
+        {'name': 3, 'value': 4}]
+    )

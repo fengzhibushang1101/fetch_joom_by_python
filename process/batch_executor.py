@@ -1,29 +1,18 @@
 # coding=utf8
+import os
+import sqlalchemy as SA
 from process.fetch_cate_product import batch_product_ids, restore_cate_items_task
 from process.fetech_pro_info import JoomProduct
-from process.update_category_true import JoomCategory
 from sql.category import Category
 from sql.task_schedule import TaskSchedule
-
-__author__ = 'Administrator'
-
 from func import get_joom_token
 from utils.redis_util import redis_conn
-
-import os
-import traceback
-from sqlalchemy import text
-from functools import partial
 from concurrent import futures
 from sqlalchemy.sql import and_
-from sql.base import db, sessionCM, mysql_db
+from sql.base import sessionCM, mysql_db
 from multiprocessing import Pool
-import sqlalchemy as SA
 
-#
-# authorization = cc.get("joom#token")
-#
-#
+
 def init_cate_task():
     with sessionCM() as session:
         cate_lst = session.query(Category.tag).filter(and_(Category.site_id == 31, Category.is_leaf == 1)).all()

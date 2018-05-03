@@ -8,6 +8,7 @@ from sql.joom_shop import JoomShop
 from sql.joom_user import JoomUser
 from sql.product_body import ProductBody
 from sql.task_schedule import TaskSchedule
+from sql.test_table import TestTable
 
 
 def create_all_tables():
