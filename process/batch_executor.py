@@ -87,10 +87,13 @@ def multi_thread_worker(kind, auth, tasks, i):
                 data = future.result()
             except Exception as exc:
                 print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
-    if kind == "pro":
+    if kind == "item":
         connect = db.connect()
+        print "start store items of this process"
         jp.add_pro_to_mysql(connect, i)
+        print "start store shops of this process"
         jp.add_shop_to_mysql(connect, i)
+        connect.close()
     print("kind: %s, complete a batch tasks @@@@@@" % kind)
 
 
