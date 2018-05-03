@@ -85,24 +85,26 @@ class JoomPro(Base):
         try:
             new_infos = []
             for info in infos:
-                name = info.get("name", "") or ""
+                name = info.get("name", "")
                 pro_no = info["pro_no"]
                 shop_no = info["shop_no"]
-                category_id = info.get("category_id", "") or ""
-                image = info.get("image", "") or ""
-                rate = info.get("rate", 0) or 0
-                msrp = info.get("msrp", 0) or 0
-                discount = info.get("discount", 0) or 0
-                real_price = info.get("real_price", 0) or 0
-                reviews_count = info.get("reviews_count", 0) or 0
+                category_id = info.get("category_id", "")
+                image = info.get("image", "")
+                rate = info.get("rate", 0)
+                msrp = info.get("msrp", 0)
+                discount = info.get("discount", 0)
+                real_price = info.get("real_price", 0)
+                reviews_count = info.get("reviews_count", 0)
                 create_time = info["create_time"]
                 update_time = info["update_time"]
-                new_infos.append(
-                    dict(jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate,
-                         msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count,
-                         create_time=create_time, update_time=update_time))
-            sql = text(
-                'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
+                new_infos.append((name, pro_no, shop_no, category_id, image, rate, msrp, discount, real_price,
+                                  reviews_count, create_time, update_time, name, category_id, rate, msrp, discount, real_price, reviews_count, update_time))
+                # dict(jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate,
+                #      msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count,
+                #      create_time=create_time, update_time=update_time))
+            # sql = text(
+            #     'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
+            sql = 'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (?, ?, ?,?,?,?,?,?,?,?,?,?,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=?,category_id=?,rate=?,msrp=?,discount=?,real_price=?,reviews_count=?,update_time?;'
 
             cursor = connect.execute(sql, *new_infos)
             cursor.close()
@@ -149,3 +151,14 @@ class JoomPro(Base):
             cursor.close()
             connect.close()
 
+if __name__ == "__main__":
+    from sql.base import db
+    connect = db.connect()
+    JoomPro.batch_upsert(connect, [{
+        "pro_no": "111111111",
+        "shop_no": "222222222",
+        "create_time": datetime.datetime.now(),
+        "update_time": datetime.datetime.now(),
+    }])
+    print 111111
+    connect.close()
