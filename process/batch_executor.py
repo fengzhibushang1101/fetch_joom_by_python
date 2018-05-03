@@ -1,5 +1,6 @@
 # coding=utf8
 from process.fetch_cate_product import batch_product_ids, restore_cate_items_task
+from process.fetech_pro_info import JoomProduct
 from process.update_category_true import JoomCategory
 from sql.category import Category
 from sql.task_schedule import TaskSchedule
@@ -35,26 +36,25 @@ def init_cate_task():
         TaskSchedule.batch_insert(session, **kwargs)
     return True
 
-
-#
 def batch_cate_item_rev(auth):
     process_length = {
-        "cate": 1,
+        "cate": 4,
         "item": 4,
         "rev": 4
     }
-    for kind in ["cate"]:
+    for kind in ["item"]:
+        process_len = process_length[kind]
         while True:
             print("kind: %s, begin a batch tasks @@@@@@" % kind)
-            tasks = TaskSchedule.get_init_raw(kind, 31)
+            tasks = TaskSchedule.get_init_raw(kind, 31, limit=process_len * 10000)
             if not tasks:
                 if kind == "cate":
                     restore_cate_items_task()
                 print("%s tasks all completed !!!" % kind)
                 break
-            p = Pool(4)
-            for i in range(4):
-                p.apply_async(multi_thread_worker, args=(kind, auth, tasks[i::4]))
+            p = Pool(process_len)
+            for i in range(process_len):
+                p.apply_async(multi_thread_worker, args=(kind, auth, tasks[i::process_len]))
             print('Waiting for all subprocesses done...')
             p.close()
             p.join()
@@ -62,6 +62,7 @@ def batch_cate_item_rev(auth):
 
 
 def multi_thread_worker(kind, auth, tasks):
+    jp = JoomProduct(auth)
     db = SA.create_engine(
         "mysql://%s:%s@%s/%s?charset=utf8mb4" % (
         mysql_db["user"], mysql_db["password"], mysql_db["host"], mysql_db["db"]),
@@ -71,6 +72,7 @@ def multi_thread_worker(kind, auth, tasks):
     )
     EXECUTOR = {
         "cate": batch_product_ids,
+        "item": jp.product_info
     }
     fun_executor = EXECUTOR[kind]
     with futures.ThreadPoolExecutor(max_workers=256) as executor:
@@ -119,17 +121,19 @@ if __name__ == "__main__":
     def begin():
         redis_conn.delete("joom_token")
         auth = get_joom_token()
-        will_update_category = raw_input("是否更新类目(y/n)?")
-        if will_update_category.lower() in ["yes", "y"]:
-            JoomCategory(auth).begin_stalk()
-        will_clear_schedule = raw_input("是否清空任务队列(y/n)?")
-        if will_clear_schedule.lower() in ["yes", "y"]:
-            TaskSchedule.clear()
-            init_cate_task()
-        will_clear_before_pros = raw_input("是否清空原来的产品ID(y/n)?")
-        if will_clear_before_pros.lower() in ["yes", "y"]:
-            redis_conn.delete('cate#items')
+        # will_update_category = raw_input("是否更新类目(y/n)?")
+        # if will_update_category.lower() in ["yes", "y"]:
+        #     JoomCategory(auth).begin_stalk()
+        # will_clear_schedule = raw_input("是否清空任务队列(y/n)?")
+        # if will_clear_schedule.lower() in ["yes", "y"]:
+        #     TaskSchedule.clear()
+        #     init_cate_task()
+        # will_clear_before_pros = raw_input("是否清空原来的产品ID(y/n)?")
+        # if will_clear_before_pros.lower() in ["yes", "y"]:
+        #     redis_conn.delete('cate#items')
         batch_cate_item_rev(auth)
 
 
-    cProfile.run('begin()', )
+    # cProfile.run('begin()', )
+
+    begin()
