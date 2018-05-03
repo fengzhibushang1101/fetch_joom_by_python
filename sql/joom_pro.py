@@ -104,7 +104,7 @@ class JoomPro(Base):
                 #      create_time=create_time, update_time=update_time))
             # sql = text(
             #     'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
-            sql = 'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (?, ?, ?,?,?,?,?,?,?,?,?,?,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=?,category_id=?,rate=?,msrp=?,discount=?,real_price=?,reviews_count=?,update_time?;'
+            sql = 'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (?, ?, ?,?,?,?,?,?,?,?,?,?,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=?,category_id=?,rate=?,msrp=?,discount=?,real_price=?,reviews_count=?,update_time=?;'
 
             cursor = connect.execute(sql, *new_infos)
             cursor.close()
