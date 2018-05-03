@@ -18,7 +18,7 @@ from utils.redis_util import redis_conn
 batch_url = "https://api.joom.com/1.1/search/products?language=en-US&currency=USD&_=jfs3%s"
 
 
-def batch_product_ids(auth, **kwargs):
+def batch_product_ids(auth, db, **kwargs):
     headers = {
         "content-type": "application/json",
         "authorization": auth,
@@ -60,7 +60,7 @@ def batch_product_ids(auth, **kwargs):
             print("get cate products error: cate: %s, times: %s" % (cate, times))
             print(e.message)
             error_status = TaskSchedule.ERROR
-        TaskSchedule.raw_set(31, "cate", cate, error_status, times, error_times, pg_token)
+        TaskSchedule.raw_set(31, "cate", cate, error_status, times, error_times, pg_token, db=db)
         return
     if "unauthorized" in res.content:
         auth = get_joom_token()
@@ -74,17 +74,17 @@ def batch_product_ids(auth, **kwargs):
             redis_conn.sadd("cate#items", *items)
         if len(items) == 0:
             print "change a status to done"
-            result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.DONE, times)
+            result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.DONE, times, db=db)
         else:
             print "change a status to init"
-            result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.INIT, times+1, 0, content["payload"]["nextPageToken"])
+            result = TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.INIT, times+1, 0, content["payload"]["nextPageToken"], db=db)
             if not result:
                 print("cate update error with tag: %s" % cate)
-                TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.PEND, times, error_times+1, pg_token)
+                TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.PEND, times, error_times+1, pg_token, db=db)
         del items
     elif res.status_code == 200 and (
                         "payload" not in content or times > 10000 or "nextPageToken" not in content["payload"]):
-        TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.DONE, times, 0)
+        TaskSchedule.raw_set(31, "cate", cate, TaskSchedule.DONE, times, 0, db=db)
     else:
         error_times += 1
         error_status = TaskSchedule.INIT
@@ -92,7 +92,7 @@ def batch_product_ids(auth, **kwargs):
             error_status = TaskSchedule.ERROR
             print("get cate products error: cate: %s, times: %s" % (cate, times))
             print(content)
-        TaskSchedule.raw_set(31, "cate", cate, error_status, times, error_times, pg_token)
+        TaskSchedule.raw_set(31, "cate", cate, error_status, times, error_times, pg_token, db=db)
     return True
 
 

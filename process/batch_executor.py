@@ -15,9 +15,9 @@ from sqlalchemy import text
 from functools import partial
 from concurrent import futures
 from sqlalchemy.sql import and_
-from sql.base import db, sessionCM
+from sql.base import db, sessionCM, mysql_db
 from multiprocessing import Pool
-
+import sqlalchemy as SA
 
 #
 # authorization = cc.get("joom#token")
@@ -62,13 +62,20 @@ def batch_cate_item_rev(auth):
 
 
 def multi_thread_worker(kind, auth, tasks):
+    db = SA.create_engine(
+        "mysql://%s:%s@%s/%s?charset=utf8mb4" % (
+        mysql_db["user"], mysql_db["password"], mysql_db["host"], mysql_db["db"]),
+        echo=False,
+        pool_recycle=3600,
+        pool_size=5000
+    )
     EXECUTOR = {
         "cate": batch_product_ids,
     }
     fun_executor = EXECUTOR[kind]
     with futures.ThreadPoolExecutor(max_workers=256) as executor:
         future_to_worker = {
-            executor.submit(fun_executor, auth, **ts): ts for ts in tasks
+            executor.submit(fun_executor, auth, db, **ts): ts for ts in tasks
         }
         for future in futures.as_completed(future_to_worker):
             ts = future_to_worker[future]
