@@ -243,6 +243,7 @@ class JoomProduct(object):
                     result = future.result()
                 except Exception as exc:
                     print("%r generated an exception: %s" % (s_item, exc))
+        redis_conn.delete("joom_items#%s" % i)
         print("saved ok @@@")
 
     @classmethod
@@ -258,4 +259,5 @@ class JoomProduct(object):
                     result = future.result()
                 except Exception as exc:
                     print("%r generated an exception: %s" % (s_item, exc))
+        redis_conn.delete("joom_shops#%s" % i)
         print("saved ok @@@")
