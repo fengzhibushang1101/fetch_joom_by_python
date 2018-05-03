@@ -43,7 +43,7 @@ class JoomShop(Base):
         return session.query(cls).filter(cls.shop_no == shop_no).first()
 
     @staticmethod
-    def batct_upsert(connect, infos):
+    def batch_upsert(connect, infos):
 
         try:
             new_infos = []
