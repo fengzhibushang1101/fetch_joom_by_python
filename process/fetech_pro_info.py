@@ -74,7 +74,7 @@ class JoomProduct(object):
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
         time_end = time.time()
         print("time: " + str(time_end - time_start))
-        print("count: " + (time_end - time_start)/ (time_end-time_mid))
+        print("count: " + str((time_end - time_start)/ (time_end-time_mid)))
         return True
 
     def trans_pro(self, res):
