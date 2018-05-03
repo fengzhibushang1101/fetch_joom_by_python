@@ -7,8 +7,10 @@
  @Description: 
 """
 import traceback
-
+import time
 import datetime
+
+import pickle
 import requests
 from concurrent import futures
 
@@ -50,6 +52,7 @@ class JoomProduct(object):
 
     def product_info(self, auth, db, **kwargs):
         # 产品详细信息
+        time_start = time.time()
         pid = kwargs["key"]
         url = self.product_url % (pid, random_key(4))
         headers = self.headers.copy()
@@ -79,9 +82,11 @@ class JoomProduct(object):
         #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
         self.save_body(connect, **pro_body)
         connect.close()
-        redis_conn.sadd("joom_items#%s" % kwargs["pid"], pro_info)
-        redis_conn.sadd("joom_shops#%s" % kwargs["pid"], shop_info)
+        redis_conn.sadd("joom_items#%s" % kwargs["pid"], pickle.dumps(pro_info))
+        redis_conn.sadd("joom_shops#%s" % kwargs["pid"], pickle.loads(shop_info))
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
+        time_end = time.time()
+        print("time: " + str(time_end - time_start))
         return True
 
     def trans_pro(self, res):
@@ -214,7 +219,7 @@ class JoomProduct(object):
 
     @classmethod
     def batch_save_pro(self, connect, infos):
-        infos = map(lambda x: json.loads(x), infos)
+        infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomPro.batch_upsert(connect, infos)
         except:
@@ -223,7 +228,7 @@ class JoomProduct(object):
 
     @classmethod
     def batch_save_shop(self, connect, infos):
-        infos = map(lambda x: json.loads(x), infos)
+        infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomShop.batch_upsert(connect, infos)
         except:
