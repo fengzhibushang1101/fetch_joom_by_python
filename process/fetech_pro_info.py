@@ -63,23 +63,27 @@ class JoomProduct(object):
             try:
                 res = requests.get(url, headers=headers, timeout=10)
             except:
-                TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1)
+                TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1, _db=db)
                 return False
         content = json.loads(res.content)
         if "payload" not in content:
             print("tag: %s, payload not in content: %s" % (pid, content))
-            TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1)
+            TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1, _db=db)
             return True
         pro_body, shop_info, pro_info = self.trans_pro(content)
         connect = db.connect()
         # if pro_info["reviews_count"] and (pro_info["reviews_count"] > 99 or (pro_info["reviews_count"] > JoomPro.pro_review_cnt(pid))):
         #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
-        if pro_info["reviews_count"]:
-            TaskSchedule.raw_upsert(connect, pid, "rev", 31)
+        # if pro_info["reviews_count"]:
+        #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
         self.save_body(connect, **pro_body)
+        connect.close()
+        connect = db.connect()
         self.save_product(connect, **pro_info)
+        connect.close()
+        connect = db.connect()
         self.save_shop(connect, **shop_info)
-        TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1)
+        TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
         connect.close()
         return True
 
