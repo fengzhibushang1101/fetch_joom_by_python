@@ -38,7 +38,6 @@ class JoomProduct(object):
 
     def product_info(self, auth, db, **kwargs):
         # 产品详细信息
-        time_start = time.time()
         pid = kwargs["key"]
         url = self.product_url % (pid, random_key(4))
         headers = self.headers.copy()
@@ -60,21 +59,14 @@ class JoomProduct(object):
             print("tag: %s, payload not in content: %s" % (pid, content))
             TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1, _db=db)
             return True
-        time_mid = time.time()
         pro_body, shop_info, pro_info = self.trans_pro(content)
         connect = db.connect()
-        # if pro_info["reviews_count"] and (pro_info["reviews_count"] > 99 or (pro_info["reviews_count"] > JoomPro.pro_review_cnt(pid))):
-        #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
-        # if pro_info["reviews_count"]:
-        #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
         self.save_body(connect, **pro_body)
         connect.close()
         redis_conn.sadd("joom_items#%s" % kwargs["pid"], pickle.dumps(pro_info))
         redis_conn.sadd("joom_shops#%s" % kwargs["pid"], pickle.dumps(shop_info))
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
-        time_end = time.time()
-        print("time: " + str(time_end - time_start))
-        print("count: " + str((time_end - time_start)/ (time_end-time_mid)))
+
         return True
 
     def trans_pro(self, res):
