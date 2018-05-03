@@ -52,11 +52,12 @@ class JoomProduct(object):
         pid = kwargs["key"]
         url = self.product_url % (pid, random_key(4))
         headers = self.headers.copy()
+        headers["authorization"] = self.auth
         del headers["content-type"]
         try:
             res = requests.get(url, headers=headers, timeout=10)
             if "unauthorized" in res.content or "payload" not in res.content:
-                get_joom_token()
+                self.auth = get_joom_token()
                 res = requests.get(url, headers=headers, timeout=10)
         except:
             try:
