@@ -83,7 +83,7 @@ class JoomProduct(object):
         self.save_body(connect, **pro_body)
         connect.close()
         redis_conn.sadd("joom_items#%s" % kwargs["pid"], pickle.dumps(pro_info))
-        redis_conn.sadd("joom_shops#%s" % kwargs["pid"], pickle.loads(shop_info))
+        redis_conn.sadd("joom_shops#%s" % kwargs["pid"], pickle.dumps(shop_info))
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
         time_end = time.time()
         print("time: " + str(time_end - time_start))
@@ -218,7 +218,7 @@ class JoomProduct(object):
             return False
 
     @classmethod
-    def batch_save_pro(self, connect, infos):
+    def batch_save_pro(cls, connect, infos):
         infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomPro.batch_upsert(connect, infos)
@@ -227,7 +227,7 @@ class JoomProduct(object):
             return False
 
     @classmethod
-    def batch_save_shop(self, connect, infos):
+    def batch_save_shop(cls, connect, infos):
         infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomShop.batch_upsert(connect, infos)
@@ -255,7 +255,7 @@ class JoomProduct(object):
     def add_shop_to_mysql(cls, connect, i):
         with futures.ThreadPoolExecutor(max_workers=4) as executor:
             future_save_item = {
-                executor.submit(cls.batch_save_pro, connect, s_item): s_item for s_item in
+                executor.submit(cls.batch_save_shop, connect, s_item): s_item for s_item in
                 redis_conn.sscan_iter("joom_shops#%s" % i, count=4, batch=2500)
             }
             for future in futures.as_completed(future_save_item):
