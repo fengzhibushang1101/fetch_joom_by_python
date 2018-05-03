@@ -35,20 +35,6 @@ class JoomProduct(object):
             "origin": "https://www.joom.com"
         }
 
-    def restore_cate_items_task(self):
-        print("saving the cate items ...")
-        with futures.ThreadPoolExecutor(max_workers=32) as executor:
-            future_save_item = {
-                executor.submit(self.raw_batch_save_item, s_item): s_item for s_item in
-                cc.sscan_iter("cate#items", count=300, batch=500)
-            }
-            for future in futures.as_completed(future_save_item):
-                s_item = future_save_item[future]
-                try:
-                    result = future.result()
-                except Exception as exc:
-                    print("%r generated an exception: %s" % (s_item, exc))
-        print("saved ok @@@")
 
     def product_info(self, auth, db, **kwargs):
         # 产品详细信息
@@ -74,6 +60,7 @@ class JoomProduct(object):
             print("tag: %s, payload not in content: %s" % (pid, content))
             TaskSchedule.raw_set(31, "item", pid, TaskSchedule.ERROR, 1, _db=db)
             return True
+        time_mid = time.time()
         pro_body, shop_info, pro_info = self.trans_pro(content)
         connect = db.connect()
         # if pro_info["reviews_count"] and (pro_info["reviews_count"] > 99 or (pro_info["reviews_count"] > JoomPro.pro_review_cnt(pid))):
@@ -87,6 +74,7 @@ class JoomProduct(object):
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
         time_end = time.time()
         print("time: " + str(time_end - time_start))
+        print("count: " + (time_end - time_start)/ (time_end-time_mid))
         return True
 
     def trans_pro(self, res):
