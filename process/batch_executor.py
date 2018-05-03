@@ -75,7 +75,7 @@ def multi_thread_worker(kind, auth, tasks, i):
         "item": jp.product_info
     }
     fun_executor = EXECUTOR[kind]
-    with futures.ThreadPoolExecutor(max_workers=256) as executor:
+    with futures.ThreadPoolExecutor(max_workers=220) as executor:
         future_to_worker = {}
         for ts in tasks:
             ts["pid"] = i
