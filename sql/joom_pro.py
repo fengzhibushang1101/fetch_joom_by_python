@@ -1,4 +1,4 @@
-#coding=utf8
+# coding=utf8
 __author__ = 'changdongsheng'
 import datetime
 import traceback
@@ -11,7 +11,6 @@ from sqlalchemy import text
 
 
 class JoomPro(Base):
-
     __tablename__ = "joom_pro"
 
     id = SA.Column(SA.Integer(), primary_key=True, autoincrement=True)
@@ -37,7 +36,7 @@ class JoomPro(Base):
     save_count = SA.Column(SA.Integer(), nullable=False, default=0)  # 收藏总数 目前没用到
     shop_no = SA.Column(SA.String(64), nullable=False)
     create_time = SA.Column(SA.DateTime(), nullable=False)  # 产品创建时间 根据最早变体创建时间计算
-    update_time = SA.Column(SA.DateTime(), nullable=False)   # 产品修改时间 根据最近变体修改时间计算
+    update_time = SA.Column(SA.DateTime(), nullable=False)  # 产品修改时间 根据最近变体修改时间计算
 
     @classmethod
     def upsert(cls, session, **kwargs):
@@ -48,11 +47,9 @@ class JoomPro(Base):
         session.commit()
         return joom_pro
 
-
     @classmethod
     def find_by_no(cls, session, pro_no):
         return session.query(cls).filter(cls.pro_no == pro_no).first()
-
 
     @classmethod
     def update_review_info(cls, session, pro_no, rc30, rc7, rc714, growth_rate):
@@ -76,10 +73,42 @@ class JoomPro(Base):
 
     @staticmethod
     def raw_update(connect, **kwargs):
-        sql = text('update joom_pro set r_count_30=:r_count_30, r_count_7=:r_count_7, r_count_7_14=:r_count_7_14, growth_rate=:growth_rate where pro_no=:pro_no;')
+        sql = text(
+            'update joom_pro set r_count_30=:r_count_30, r_count_7=:r_count_7, r_count_7_14=:r_count_7_14, growth_rate=:growth_rate where pro_no=:pro_no;')
         cursor = connect.execute(sql, **kwargs)
         cursor.close()
         return True
+
+    @staticmethod
+    def batch_upsert(connect, infos):
+
+        try:
+            new_infos = []
+            for info in infos:
+                name = info.get("name", "") or ""
+                pro_no = info["pro_no"]
+                shop_no = info["shop_no"]
+                category_id = info.get("category_id", "") or ""
+                image = info.get("image", "") or ""
+                rate = info.get("rate", 0) or 0
+                msrp = info.get("msrp", 0) or 0
+                discount = info.get("discount", 0) or 0
+                real_price = info.get("real_price", 0) or 0
+                reviews_count = info.get("reviews_count", 0) or 0
+                create_time = info["create_time"]
+                update_time = info["update_time"]
+                new_infos.append(
+                    dict(jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate,
+                         msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count,
+                         create_time=create_time, update_time=update_time))
+            sql = text(
+                'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
+
+            cursor = connect.execute(sql, *new_infos)
+            cursor.close()
+        except Exception, e:
+            print(traceback.format_exc(e))
+            return False
 
     @staticmethod
     def raw_upsert(connect, **kwargs):
@@ -96,12 +125,15 @@ class JoomPro(Base):
             reviews_count = kwargs.get("reviews_count", 0) or 0
             create_time = kwargs["create_time"]
             update_time = kwargs["update_time"]
-            sql = text('insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
-            cursor = connect.execute(sql, jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id, image=image, rate=rate, msrp=msrp, discount=discount, real_price=real_price, reviews_count=reviews_count, create_time=create_time, update_time=update_time)
+            sql = text(
+                'insert into joom_pro (joom_pro.name,pro_no,shop_no,category_id,image,rate,msrp,discount,real_price,reviews_count,create_time,update_time,cate_id1,cate_id2,cate_id3,cate_id4,cate_id5,origin_price,r_count_30,r_count_7,r_count_7_14,growth_rate,save_count) values (:jp_name,:pro_no,:shop_no,:category_id,:image,:rate,:msrp,:discount,:real_price,:reviews_count,:create_time,:update_time,"","","","","",0,0,0,0,0,0) on duplicate key update joom_pro.name=:jp_name,category_id=:category_id,rate=:rate,msrp=:msrp,discount=:discount,real_price=:real_price,reviews_count=:reviews_count,update_time=:update_time;')
+            cursor = connect.execute(sql, jp_name=name, pro_no=pro_no, shop_no=shop_no, category_id=category_id,
+                                     image=image, rate=rate, msrp=msrp, discount=discount, real_price=real_price,
+                                     reviews_count=reviews_count, create_time=create_time, update_time=update_time)
             cursor.close()
             return True
         except:
-            # logger.error(traceback.format_exc())
+            print(traceback.format_exc())
             return False
 
     @classmethod
@@ -116,3 +148,4 @@ class JoomPro(Base):
         finally:
             cursor.close()
             connect.close()
+

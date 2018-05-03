@@ -19,6 +19,7 @@ from sql.joom_pro import JoomPro
 from sql.joom_shop import JoomShop
 from sql.product_body import ProductBody
 from sql.task_schedule import TaskSchedule
+from utils.redis_util import redis_conn
 
 
 class JoomProduct(object):
@@ -37,7 +38,7 @@ class JoomProduct(object):
         with futures.ThreadPoolExecutor(max_workers=32) as executor:
             future_save_item = {
                 executor.submit(self.raw_batch_save_item, s_item): s_item for s_item in
-            cc.sscan_iter("cate#items", count=300, batch=500)
+                cc.sscan_iter("cate#items", count=300, batch=500)
             }
             for future in futures.as_completed(future_save_item):
                 s_item = future_save_item[future]
@@ -47,7 +48,7 @@ class JoomProduct(object):
                     print("%r generated an exception: %s" % (s_item, exc))
         print("saved ok @@@")
 
-    def product_info(self, auth, db,  **kwargs):
+    def product_info(self, auth, db, **kwargs):
         # 产品详细信息
         pid = kwargs["key"]
         url = self.product_url % (pid, random_key(4))
@@ -78,13 +79,9 @@ class JoomProduct(object):
         #     TaskSchedule.raw_upsert(connect, pid, "rev", 31)
         self.save_body(connect, **pro_body)
         connect.close()
-        connect = db.connect()
-        self.save_product(connect, **pro_info)
-        connect.close()
-        connect = db.connect()
-        self.save_shop(connect, **shop_info)
+        redis_conn.sadd("joom_items#%s" % kwargs["pid"], pro_info)
+        redis_conn.sadd("joom_shops#%s" % kwargs["pid"], shop_info)
         TaskSchedule.raw_set(31, "item", pid, TaskSchedule.DONE, 1, _db=db)
-        connect.close()
         return True
 
     def trans_pro(self, res):
@@ -214,3 +211,51 @@ class JoomProduct(object):
         except:
             print(traceback.format_exc())
             return False
+
+    @classmethod
+    def batch_save_pro(self, connect, infos):
+        infos = map(lambda x: json.loads(x), infos)
+        try:
+            JoomPro.batch_upsert(connect, infos)
+        except:
+            print(traceback.format_exc())
+            return False
+
+    @classmethod
+    def batch_save_shop(self, connect, infos):
+        infos = map(lambda x: json.loads(x), infos)
+        try:
+            JoomShop.batch_upsert(connect, infos)
+        except:
+            print(traceback.format_exc())
+            return False
+
+    @classmethod
+    def add_pro_to_mysql(cls, connect, i):
+        with futures.ThreadPoolExecutor(max_workers=4) as executor:
+            future_save_item = {
+                executor.submit(cls.batch_save_pro, connect, s_item): s_item for s_item in
+                redis_conn.sscan_iter("joom_items#%s" % i, count=4, batch=2500)
+            }
+            for future in futures.as_completed(future_save_item):
+                s_item = future_save_item[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    print("%r generated an exception: %s" % (s_item, exc))
+        print("saved ok @@@")
+
+    @classmethod
+    def add_shop_to_mysql(cls, connect, i):
+        with futures.ThreadPoolExecutor(max_workers=4) as executor:
+            future_save_item = {
+                executor.submit(cls.batch_save_pro, connect, s_item): s_item for s_item in
+                redis_conn.sscan_iter("joom_shops#%s" % i, count=4, batch=2500)
+            }
+            for future in futures.as_completed(future_save_item):
+                s_item = future_save_item[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    print("%r generated an exception: %s" % (s_item, exc))
+        print("saved ok @@@")

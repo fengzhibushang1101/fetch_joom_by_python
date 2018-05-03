@@ -54,14 +54,14 @@ def batch_cate_item_rev(auth):
                 break
             p = Pool(process_len)
             for i in range(process_len):
-                p.apply_async(multi_thread_worker, args=(kind, auth, tasks[i::process_len]))
+                p.apply_async(multi_thread_worker, args=(kind, auth, tasks[i::process_len], i))
             print('Waiting for all subprocesses done...')
             p.close()
             p.join()
             print('All subprocesses done.')
 
 
-def multi_thread_worker(kind, auth, tasks):
+def multi_thread_worker(kind, auth, tasks, i):
     jp = JoomProduct(auth)
     db = SA.create_engine(
         "mysql://%s:%s@%s/%s?charset=utf8mb4" % (
@@ -76,16 +76,21 @@ def multi_thread_worker(kind, auth, tasks):
     }
     fun_executor = EXECUTOR[kind]
     with futures.ThreadPoolExecutor(max_workers=256) as executor:
-        future_to_worker = {
-            executor.submit(fun_executor, auth, db, **ts): ts for ts in tasks
-        }
+        future_to_worker = {}
+        for ts in tasks:
+            ts["pid"] = i
+            future_to_worker[executor.submit(fun_executor, auth, db, **ts)] = ts
+
         for future in futures.as_completed(future_to_worker):
             ts = future_to_worker[future]
             try:
                 data = future.result()
             except Exception as exc:
                 print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
-
+    if kind == "pro":
+        connect = db.connect()
+        jp.add_pro_to_mysql(connect, i)
+        jp.add_shop_to_mysql(connect, i)
     print("kind: %s, complete a batch tasks @@@@@@" % kind)
 
 
