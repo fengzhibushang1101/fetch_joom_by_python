@@ -75,6 +75,9 @@ def multi_thread_worker(kind, auth, tasks, i):
         "item": jp.product_info
     }
     fun_executor = EXECUTOR[kind]
+    if kind == 'item':
+        redis_conn.delete("joom_items#%s" % i)
+        redis_conn.delete("joom_shops#%s" % i)
     with futures.ThreadPoolExecutor(max_workers=32) as executor:
         future_to_worker = {}
         for ts in tasks:
