@@ -89,7 +89,7 @@ class TaskSchedule(Base):
     def raw_set(site, kind, key, status, dealtime, error_times=0, next_token=None):
         sql = text(
             'update task_schedule set status=:status, error_times=:error_times, dealtime=:dealtime, next_token=:next_token where task_schedule.key=:ts_key and kind=:kind and site=:site;')
-        connect = db.connect()
+        connect = db.connect(close_with_result=True)
         cursor = connect.execute(sql, status=status, ts_key=key, kind=kind, site=site, dealtime=dealtime,
                                  error_times=error_times, next_token=next_token)
         cursor.close()
