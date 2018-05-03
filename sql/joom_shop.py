@@ -49,14 +49,14 @@ class JoomShop(Base):
             new_infos = []
 
             for info in infos:
-                name = info.get("name", "") or ""
+                name = info.get("name", "")
                 shop_no = info["shop_no"]
-                logo = info.get("logo", "") or ""
-                rate = info.get("rate", 0) or 0
-                save_count = info.get("save_count", 0) or 0
+                logo = info.get("logo", "")
+                rate = info.get("rate", 0)
+                save_count = info.get("save_count", 0)
                 create_time = info["create_time"]
                 update_time = info["update_time"]
-                is_verify = info.get("is_verify", "0") or "0"
+                is_verify = info.get("is_verify", "0")
                 new_infos.append(
                     dict(shop_name=name, shop_no=shop_no, logo=logo, rate=rate, save_count=save_count,
                          create_time=create_time, update_time=update_time, is_verify=is_verify))
