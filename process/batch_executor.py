@@ -16,6 +16,7 @@ from functools import partial
 from concurrent import futures
 from sqlalchemy.sql import and_
 from sql.base import db, sessionCM
+from multiprocessing import Pool
 
 
 #
@@ -37,9 +38,6 @@ def init_cate_task():
 
 #
 def batch_cate_item_rev(auth):
-    EXECUTOR = {
-        "cate": batch_product_ids,
-    }
     process_length = {
         "cate": 1,
         "item": 4,
@@ -54,21 +52,34 @@ def batch_cate_item_rev(auth):
                     restore_cate_items_task()
                 print("%s tasks all completed !!!" % kind)
                 break
-            fun_executor = EXECUTOR[kind]
-            with futures.ThreadPoolExecutor(max_workers=64) as executor:
-                future_to_worker = {
-                    executor.submit(fun_executor, auth, **ts): ts for ts in tasks
-                }
-                for future in futures.as_completed(future_to_worker):
-                    ts = future_to_worker[future]
-                    try:
-                        data = future.result()
-                    except Exception as exc:
-                        print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
-            print("kind: %s, complete a batch tasks @@@@@@" % kind)
+            p = Pool(4)
+            for i in range(4):
+                p.apply_async(multi_thread_worker, args=(kind, auth, tasks[i::4]))
+            print('Waiting for all subprocesses done...')
+            p.close()
+            p.join()
+            print('All subprocesses done.')
 
 
-#
+def multi_thread_worker(kind, auth, tasks):
+    EXECUTOR = {
+        "cate": batch_product_ids,
+    }
+    fun_executor = EXECUTOR[kind]
+    with futures.ThreadPoolExecutor(max_workers=256) as executor:
+        future_to_worker = {
+            executor.submit(fun_executor, auth, **ts): ts for ts in tasks
+        }
+        for future in futures.as_completed(future_to_worker):
+            ts = future_to_worker[future]
+            try:
+                data = future.result()
+            except Exception as exc:
+                print("%s, kind: %s, generated an exception %s" % (ts, kind, exc))
+
+    print("kind: %s, complete a batch tasks @@@@@@" % kind)
+
+
 #
 # def update_review_cnt():
 #     print "update review count ..."
@@ -96,7 +107,9 @@ def self_killed():
 
 if __name__ == "__main__":
     import cProfile
-    def begin ():
+
+
+    def begin():
         redis_conn.delete("joom_token")
         auth = get_joom_token()
         will_update_category = raw_input("是否更新类目(y/n)?")
@@ -111,4 +124,5 @@ if __name__ == "__main__":
             redis_conn.delete('cate#items')
         batch_cate_item_rev(auth)
 
-    cProfile.run('begin()')
+
+    cProfile.run('begin()', )
