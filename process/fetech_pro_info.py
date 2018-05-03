@@ -199,6 +199,7 @@ class JoomProduct(object):
 
     @classmethod
     def batch_save_pro(cls, connect, infos):
+        infos = reduce(lambda x, y: x + y, infos)
         infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomPro.batch_upsert(connect, infos)
@@ -208,6 +209,7 @@ class JoomProduct(object):
 
     @classmethod
     def batch_save_shop(cls, connect, infos):
+        infos = reduce(lambda x, y: x+y, infos)
         infos = map(lambda x: pickle.loads(x), infos)
         try:
             JoomShop.batch_upsert(connect, infos)
